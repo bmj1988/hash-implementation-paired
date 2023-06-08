@@ -9,8 +9,9 @@ class KeyValuePair {
 class HashTable { // get O(1), set O(1), deleteKey O(1)
 
   constructor(numBuckets = 8) {
-    // Initialize your buckets here
-    // Your code here
+    this.data = new Array(numBuckets).fill(null)
+    this.capacity = numBuckets
+    this.count = 0
   }
 
   hash(key) {
@@ -30,22 +31,80 @@ class HashTable { // get O(1), set O(1), deleteKey O(1)
 
 
   insert(key, value) {
-    // Your code here
+    const loadSize = this.count / this.capacity
+    if (loadSize > 0.7) this.resize()
+    let index = this.hashMod(key)
+    let node = this.data[index]
+    while (node && node.key !== key) {
+      node = node.next
+    }
+    if (node) {
+      node.value = value
+    }
+    else {
+      let newNode = new KeyValuePair(key, value)
+      if (!this.data[index]) {
+        this.data[index] = newNode
+      }
+      else {
+        newNode.next = this.data[index]
+        this.data[index] = newNode
+      }
+      this.count++
+
+
+    }
   }
 
 
   read(key) {
-    // Your code here
+    const i = this.hashMod(key)
+    let currentNode = this.data[i]
+    while (currentNode) {
+      if (currentNode.key === key) {
+        return currentNode.value
+      }
+      currentNode = currentNode.next
+    }
+    return undefined
   }
 
 
   resize() {
-    // Your code here
+    const oldData = this.data
+    this.capacity *= 2
+    this.data = new Array(this.capacity).fill(null)
+    this.count = 0
+    for (let i = 0; i < oldData.length; i++) {
+      let node = oldData[i]
+      while (node) {
+        this.insert(node.key, node.value)
+        node = node.next
+      }
+    }
+    return
   }
 
 
   delete(key) {
-    // Your code here
+    let index = this.hashMod(key)
+    let currentNode = this.data[index]
+    let nextNode = this.data[index].next
+    while (currentNode.next) {
+      if (nextNode.key === key) {
+        if (!nextNode.next) {
+          currentNode.next = undefined
+          return
+        }
+        else {
+          let nx = currentNode.next.next
+          currentNode.next = nx
+          return
+        }
+      }
+      currentNode = currentNode.next
+    }
+    return
   }
 }
 
